@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { COURSES, SUBJECTS, SEMESTERS, SLOTS } from '../data/options';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://attendance-ionia.onrender.com';
 
 
 export default function FacultyPortal() {

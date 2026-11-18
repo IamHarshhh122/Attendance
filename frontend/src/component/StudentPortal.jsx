@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://attendance-ionia.onrender.com';
 
 export default function StudentPortal() {
   const [rollNo, setRollNo] = useState('');
