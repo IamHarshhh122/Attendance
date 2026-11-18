@@ -2,8 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { COURSES, SUBJECTS, SEMESTERS, SLOTS } from '../data/options';
 
-const API = 'https://attendance-ionia.onrender.com';
-
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function FacultyPortal() {
   const [selectedCourse, setSelectedCourse] = useState('B.Voc. Software Development');

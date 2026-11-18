@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { COURSES, SEMESTERS, BATCHES } from '../data/options';
 
-const API = 'https://attendance-ionia.onrender.com';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function AdminPortal() {
   const [name, setName] = useState('');
