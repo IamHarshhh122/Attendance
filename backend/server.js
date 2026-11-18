@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 mongoose
-  .connect('mongodb://127.0.0.1:27017/attendance-system')
+  .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/attendance-system')
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.log('MongoDB error:', err.message));
 

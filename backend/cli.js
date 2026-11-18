@@ -6,10 +6,9 @@ const { hideBin } = require('yargs/helpers');
 const Student = require('./models/Student');
 const Attendance = require('./models/Attendance');
 
-const connect = () => mongoose.connect('mongodb://127.0.0.1:27017/attendance-system');
+const connect = () => mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/attendance-system');
 
 yargs(hideBin(process.argv))
-  // node cli.js percentage --roll 24107021 [--subject "Machine Learning"]
   .command(
     'percentage',
     'Show subject-wise attendance percentage of a student',
