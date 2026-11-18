@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Student = require('./models/Student');
-const Attendance = require('./models/Attendance'); 
+const Attendance = require('./models/Attendance');
+const logAttendance = require('./utils/logger');
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.get('/api/students', async (req, res) => {
         let query = {};
         if (course) query.course = course;
         if (semester) query.semester = Number(semester);
-        
+
         const students = await Student.find(query);
         res.json(students);
     } catch (err) {
@@ -43,7 +44,20 @@ app.post('/api/students', async (req, res) => {
     }
 });
 
-// 2. Get Semester-wise & Subject-wise Attendance for a Student
+// 2. View all attendance records (optional filters: ?roll=24107021&subject=...)
+app.get('/api/attendance', async (req, res) => {
+    try {
+        const filter = {};
+        if (req.query.roll) filter.rollNumber = req.query.roll;
+        if (req.query.subject) filter.subject = req.query.subject;
+        const records = await Attendance.find(filter).sort({ date: -1 });
+        res.json(records);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. Get Semester-wise & Subject-wise Attendance for a Student
 app.get('/api/attendance/:rollNumber', async (req, res) => {
     try {
         const { rollNumber } = req.params;
@@ -88,16 +102,32 @@ app.get('/api/attendance/:rollNumber', async (req, res) => {
     }
 });
 
-// 3. Bulk Attendance Mark Route
+// 4. Bulk Attendance Mark Route (also writes to logs/attendance.log using fs)
 app.post('/api/attendance/bulk', async (req, res) => {
     try {
         const { records } = req.body;
         if (!records || !Array.isArray(records)) {
             return res.status(400).json({ error: "Invalid records format" });
         }
-        
+
         await Attendance.insertMany(records);
+        records.forEach((r) => logAttendance(r));
         res.status(201).json({ message: "Bulk attendance recorded successfully" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 5. Update an attendance record (e.g. Absent -> Present)
+app.put('/api/attendance/:id', async (req, res) => {
+    try {
+        const updated = await Attendance.findByIdAndUpdate(
+            req.params.id,
+            { status: req.body.status },
+            { new: true, runValidators: true }
+        );
+        if (!updated) return res.status(404).json({ error: "Record not found" });
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

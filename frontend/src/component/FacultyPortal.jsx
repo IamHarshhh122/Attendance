@@ -4,11 +4,9 @@ import { COURSES, SUBJECTS, SEMESTERS, SLOTS } from '../data/options';
 
 const API = 'http://localhost:5000/api';
 
-const FIRST_NAMES = ["Aarav", "Priya", "Rohan", "Sneha", "Amit", "Neha", "Vikas", "Anjali", "Deepak", "Pooja", "Manish", "Kajal", "Sahil", "Divya", "Rohit", "Simran", "Abhishek", "Megha", "Kunal", "Shreya", "Harsh", "Ritu", "Nikhil", "Tanya", "Akash"];
-const LAST_NAMES = ["Sharma", "Verma", "Gupta", "Singh", "Kumar", "Mishra", "Yadav", "Tiwari", "Rawat", "Pandey", "Chaurasiya", "Jha", "Khan", "Chauhan", "Malhotra", "Kaur", "Thapa", "Joshi", "Roy", "Sen", "Bhatta", "Aggarwal", "Saxena", "Kapoor", "Meena"];
 
 export default function FacultyPortal() {
-  const [selectedCourse, setSelectedCourse] = useState(COURSES[14]);
+  const [selectedCourse, setSelectedCourse] = useState('B.Voc. Software Development');
   const [semester, setSemester] = useState('5');
   const [slot, setSlot] = useState('');
   const [subject, setSubject] = useState('');
@@ -34,44 +32,25 @@ export default function FacultyPortal() {
     setSuccessAnim(false);
 
     try {
-      const res = await axios.get(`${API}/students?course=${encodeURIComponent(selectedCourse)}&semester=${semester}`);
-      let fetchedStudents = res.data;
-      
+      const res = await axios.get(`${API}/students`, {
+        params: { course: selectedCourse, semester },
+      });
+      const fetchedStudents = res.data;
+
       if (!fetchedStudents || fetchedStudents.length === 0) {
-        fetchedStudents = Array.from({ length: 25 }, (_, i) => {
-          const num = i + 1;
-          const formattedNum = num < 10 ? `0${num}` : `${num}`;
-          return {
-            _id: `dummy_${i}`,
-            rollNo: `241070${formattedNum}`,
-            name: `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[(i * 3) % LAST_NAMES.length]}`,
-            semester: Number(semester),
-            course: selectedCourse
-          };
-        });
+        setStudents([]);
+        setMsg({ type: 'error', text: `No students found for ${selectedCourse} • Semester ${semester}` });
+        return;
       }
-      
+
       setStudents(fetchedStudents);
       const initialStatus = {};
-      fetchedStudents.forEach(s => { initialStatus[s.rollNo] = 'Present'; });
+      fetchedStudents.forEach((s) => { initialStatus[s.rollNo] = 'Present'; });
       setAttendanceStatus(initialStatus);
       setMsg({ type: 'success', text: `Roster loaded • ${selectedCourse} • Semester ${semester}` });
     } catch (err) {
-      const fallbackStudents = Array.from({ length: 25 }, (_, i) => {
-        const num = i + 1;
-        const formattedNum = num < 10 ? `0${num}` : `${num}`;
-        return {
-          _id: `dummy_${i}`,
-          rollNo: `241070${formattedNum}`,
-          name: `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[(i * 3) % LAST_NAMES.length]}`,
-          semester: Number(semester),
-          course: selectedCourse
-        };
-      });
-      setStudents(fallbackStudents);
-      const initialStatus = {};
-      fallbackStudents.forEach(s => { initialStatus[s.rollNo] = 'Present'; });
-      setAttendanceStatus(initialStatus);
+      setStudents([]);
+      setMsg({ type: 'error', text: 'Could not load students. Is the backend running?' });
     } finally {
       setLoading(false);
     }
